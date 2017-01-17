@@ -16,11 +16,15 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import java.util.List;
 
 /**
- * Created by sushi_000 on 1/16/2017.
+ * Author: Shamus Murray
+ *
+ * Adapter used to populate cardviews with information from TeamMember objects.
+ * This information is then organized into a list via Recyclerview.
  */
 
 public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.MyViewHolder> {
 
+    //list of TeamMember objects populated from TeamMembersActivity
     private List<TeamMember> teamMembersList;
     private Activity activity;
 
@@ -31,19 +35,19 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.MyViewHolder> 
 
         public boolean bioVisible;
         public int rotationAngle = 0;
+        public int currentPosition;
 
         public ImageView mExpandArrow;
-
         public CardView mCardView;
         public TextView mFullNameView;
         public TextView mTitleView;
         public TextView mBioView;
         public ImageView mAvatarImage;
-        public MyViewHolder(View v) {
+
+        public MyViewHolder(View v, final RecyclerView.Adapter teamAdapter) {
             super(v);
 
             mExpandArrow = (ImageView) v.findViewById(R.id.expand_arrow);
-
             mCardView = (CardView) v.findViewById(R.id.card_view);
             mFullNameView = (TextView) v.findViewById(R.id.full_name);
             mTitleView = (TextView) v.findViewById(R.id.title);
@@ -53,29 +57,34 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.MyViewHolder> 
             bioVisible = false;
 
             mCardView.setOnClickListener(new View.OnClickListener() {
-                @Override public void onClick(View v) {
-                    if(bioVisible == false) {
+                @Override
+                public void onClick(View v) {
+
+                    //expand/collapse bio depending it it's visible or not after click on cardview.
+                    if (bioVisible == false) {
                         mBioView.setVisibility(View.VISIBLE);
                         bioVisible = true;
-                    }
-                    else{
+                    } else {
                         mBioView.setVisibility(View.GONE);
                         bioVisible = false;
+
+                        //ensures that the expanded/collapsed cardview will
+                        //adjust properly in the recyclerview upon collapse.
+                        teamAdapter.notifyItemChanged(currentPosition);
                     }
 
-                    ObjectAnimator anim = ObjectAnimator.ofFloat(mExpandArrow, "rotation",rotationAngle, rotationAngle + 180);
+                    //rotate expand/collapse arrow
+                    ObjectAnimator anim = ObjectAnimator.ofFloat(mExpandArrow, "rotation", rotationAngle, rotationAngle + 180);
                     anim.setDuration(300);
                     anim.start();
                     rotationAngle += 180;
-                    rotationAngle = rotationAngle%360;
-
+                    rotationAngle = rotationAngle % 360;
                 }
             });
 
         }
     }
 
-    // Provide a suitable constructor (depends on the kind of dataset)
     public TeamAdapter(List<TeamMember> teamMembersList, Activity activity) {
         this.teamMembersList = teamMembersList;
         this.activity = activity;
@@ -83,22 +92,25 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.MyViewHolder> 
 
     @Override
     public TeamAdapter.MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        // create a new view
+        //create a new view
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.team_members_card_view, parent, false);
         // set the view's size, margins, paddings and layout parameters
-        MyViewHolder vh = new MyViewHolder(v);
+        MyViewHolder vh = new MyViewHolder(v, this);
         return vh;
     }
 
     @Override
     public void onBindViewHolder(TeamAdapter.MyViewHolder holder, int position) {
+
+        holder.currentPosition = position;
+
         holder.mFullNameView.setText(teamMembersList.get(position).getFirstName() + " " + teamMembersList.get(position).getLastName());
         holder.mTitleView.setText(teamMembersList.get(position).getTitle());
         holder.mBioView.setText(teamMembersList.get(position).getBio());
 
+        //Use Glide to load images from URL and display in Cardview Imageviews.
         String mediaURL = teamMembersList.get(position).getAvatarURL();
-
         Glide.with(activity)
                 .load(mediaURL)
                 .crossFade()
@@ -111,5 +123,4 @@ public class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.MyViewHolder> 
     public int getItemCount() {
         return teamMembersList.size();
     }
-
 }

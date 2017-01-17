@@ -27,6 +27,13 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/*
+* Author: Shamus Murray
+*
+* Main entry point of application.
+* Manages Recyclerview creation, JSON parsing, and main UI layouts.
+*
+ */
 public class TeamMembersActivity extends AppCompatActivity {
 
     protected RecyclerView mRecyclerView;
@@ -45,10 +52,11 @@ public class TeamMembersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
 
+        //change collapsing toolbar layout's font to match cardview fonts.
         CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);
-        final Typeface tf = Typeface.createFromAsset(getAssets(), "fonts/sans-serif-light");
-        //collapsingToolbarLayout.setCollapsedTitleTypeface();
-        //collapsingToolbarLayout.setExpandedTitleTypeface(tf);
+        final Typeface tf = Typeface.createFromAsset(getAssets(), "Fonts/Roboto-Light.ttf");
+        collapsingToolbarLayout.setCollapsedTitleTypeface(tf);
+        collapsingToolbarLayout.setExpandedTitleTypeface(tf);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -57,13 +65,13 @@ public class TeamMembersActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Visit \"murraystudio.github.io\" for more info", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Created by Shamus Murray. Please visit \"murraystudio.github.io\" for more examples of work.", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
 
 
-        teamMembersList = new ArrayList<TeamMember>();
+        teamMembersList = new ArrayList<>();
 
 
         mRecyclerView = (RecyclerView) findViewById(R.id.main_recycler_view);
@@ -104,12 +112,18 @@ public class TeamMembersActivity extends AppCompatActivity {
         mRecyclerView.scrollToPosition(scrollPosition);
     }
 
+    /*
+    *
+    * Using Json string loaded from assets, go through JSON array
+    * and assign elements to build a TeamMember object.
+    *
+     */
     private void parseJson() throws JSONException, IOException {
         JSONObject data = new JSONObject(loadJSONFromAsset());
         JSONArray children = data.getJSONArray("children");
 
         //go through each JSON child and get the post data needed to populate our post cards.
-        for(int i=0; i<children.length(); i++){
+        for (int i = 0; i < children.length(); i++) {
             JSONObject cur = children.getJSONObject(i);
 
             TeamMember tm = new TeamMember();
@@ -126,6 +140,11 @@ public class TeamMembersActivity extends AppCompatActivity {
         mRecyclerView.setAdapter(teamAdapter);
     }
 
+    /*
+    *
+    * Load JSON as a readable string for JSONObject.
+    *
+     */
     private String loadJSONFromAsset() throws IOException {
         InputStream is = getResources().openRawResource(R.raw.team);
         Writer writer = new StringWriter();
